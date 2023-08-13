@@ -16,10 +16,11 @@
                 <span id="logo_text">Weather App Online</span>
             </div>
             <div id="search">
-                <input type="text" id="search_value" placeholder="Search">
-                <button id="search_button">
+                <input type="text" id="search_value" placeholder="Search" name="searchval">
+                <button id="search_button" >
                     <i class="fa fa-search"></i>
                 </button>
+                <button id="view_data">View Saved Data</button>
             </div>
         </div>
         <div class="workingarea">
@@ -84,5 +85,7 @@
         </div>
     </div>
     <script src="script.js"></script>
+
+
 </body>
 </html>

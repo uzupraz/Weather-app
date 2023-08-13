@@ -1,6 +1,8 @@
+let globalWeatherData = null;
+
 window.onload = () => {
     const api = "18311b05171c88fe686145a5e0f3fc10";
-    const default_city = "Prichard,USA";
+    const default_city = "Prichard,US";
 
     //selectors
     let cityname = document.getElementById("cityname");
@@ -16,6 +18,7 @@ window.onload = () => {
 
     //program starts here with the value of the default city
     start(default_city);
+
     //this makes the search bar work even when you tap enter on your keyboard
     search_value.addEventListener("keypress", function(event) {
         if (event.key === "Enter") {
@@ -50,6 +53,7 @@ window.onload = () => {
 
     //this block updates the values and displays them in the program
     function main(data){
+        globalWeatherData = data;
         console.log(data);
         weatherIcon.src = `http://openweathermap.org/img/wn/${data.weather[0].icon}@4x.png`;
         cityname.innerHTML = data.name+", "+data.sys.country;
@@ -65,6 +69,14 @@ window.onload = () => {
         mapCoords(data.coord.lat, data.coord.lon);
         backGround(data.weather[0].main);
         setPressure(data.main.pressure);
+
+        document.body.addEventListener('click', function(event) {
+            if (event.target && event.target.id === 'view_data' && globalWeatherData) {
+                viewData(globalWeatherData.name + "," + globalWeatherData.sys.country);
+            }
+        });
+        
+        saveDataToDB(data);
     }
 
     //this is to get the date from the api
@@ -126,4 +138,42 @@ window.onload = () => {
         let rotation = ((pressure - minPressure) / (maxPressure - minPressure)) * (maxRotation - minRotation) + minRotation;
         arrowp.style.transform = `rotate(${rotation}deg)`;
     }
+
+    // Saves the data object in the database by creating a POST request
+    function saveDataToDB(weatherdata) {
+        var xhr = new XMLHttpRequest();
+        var data = "weatherdata=" + JSON.stringify(weatherdata);
+        xhr.open('POST', 'receiver.php', true);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                var response = xhr.responseText;
+                console.log(response);
+            }
+        };
+        xhr.send(data);
+    }
+
+    // Creates a POST request to view data by sending cityname as a parameter
+    function viewData(cityname){
+        console.log("VIEWDATA: Running")
+        var form = document.createElement('form');
+        form.method = 'POST';
+        form.action = 'view.php';
+        form.target = '_blank';  // to open in a new tab
+
+        var hiddenField = document.createElement('input');
+        hiddenField.type = 'hidden';
+        hiddenField.name = 'cityname';
+        hiddenField.value = cityname;
+
+        form.appendChild(hiddenField);
+        document.body.appendChild(form);
+
+        form.submit();
+
+        document.body.removeChild(form);
+    }
+    
 }
